@@ -190,7 +190,59 @@ INSERT INTO public.resume (id_resume, id_clientname, id_city, id_product, id_inv
 
 
 --CONSULTA 1
-select p.product, r.id_product
+--Como jefe de abastecimiento necesito conocer las existencias actuales para planificar nuevas compras.
+select p.product, MIN(i.stock) AS stock
 from product p
-join resume r
-on r.id_product = p.id_product
+join resume r on r.id_product = p.id_product
+join invoce i on i.id_invoce = r.id_invoce
+group by p.product;
+
+--CONSULTA 2
+--Como director comercial necesito conocer qué ciudades generan mayor volumen de pedidos.
+select c.city, count(r.id_invoce) as orders
+from resume r
+join city c on c.id_city = r.id_city
+group by c.city
+order by orders desc
+limit 5;
+
+
+--CONSULTA 3
+--Como gerente financiero necesito identificar qué categorías generan mayores ingresos
+
+select c.category ,sum(i.quantity * i.unitprice) as total
+from invoce i
+join resume r on i.id_invoce = r.id_invoce
+join product p on p.id_product = r.id_product
+join category c on p.id_category = c.id_category
+group by c.category
+order by total desc;
+
+--CONSULTA 4
+--Como coordinador logístico necesito conocer los productos próximos a agotarse.
+select p.product, MIN(i.stock) AS stock
+from product p
+join resume r on r.id_product = p.id_product
+join invoce i on i.id_invoce = r.id_invoce
+group by p.product
+order by stock asc
+limit 5;
+
+--CONSULTA 5
+--Como director comercial necesito identificar los clientes más activos.
+select c.clientname, count(r.id_invoce) as orders
+from resume r
+join clientname c on c.id_clientname = r.id_city
+group by c.clientname
+order by orders desc
+limit 5;
+
+--CONSULTA 6
+--Como gerente general necesito conocer el valor del inventario almacenado en cada centro logístico
+select d.dc , sum(i.quantity * i.unitprice) as total
+from invoce i
+join resume r on i.id_invoce = r.id_invoce
+join city c on c.id_city = r.id_city
+join distributioncenter d on d.id_dc = c.id_dc
+group by d.dc
+order by total desc;
